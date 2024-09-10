@@ -1,0 +1,50 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "prepare": "husky install",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "format:check": "prettier . --check",
+    "format:fix": "prettier . --fix"
+  },
+  "author": "arshan-01",
+  "license": "ISC",
+  "lint-staged": {
+    "*.js": [
+      "npm run lint:fix",
+      "npm run format:fix"
+    ]
+  },
+  "description": "",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.5.2",
+    "morgan": "^1.10.0",
+    "nodemon": "^3.1.4",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.4.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "@eslint/js": "^9.9.1",
+    "eslint": "^9.9.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "globals": "^15.9.0",
+    "husky": "^9.1.5",
+    "lint-staged": "^15.2.9",
+    "prettier": "^3.3.3"
+  }
+}
