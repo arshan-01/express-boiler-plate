@@ -32,8 +32,6 @@
     "mongoose": "^8.5.2",
     "morgan": "^1.10.0",
     "nodemon": "^3.1.4",
-    "husky": "^9.1.5",
-    "lint-staged": "^15.2.10",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },
@@ -45,6 +43,8 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "globals": "^15.9.0",
-    "prettier": "^3.3.3"
+    "prettier": "^3.3.3",
+    "husky": "^9.1.5",
+    "lint-staged": "^15.2.10"
   }
 }
