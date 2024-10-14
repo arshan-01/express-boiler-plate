@@ -5,17 +5,17 @@ module.exports = {
             2,
             'always',
             [
-                'feat',  // feat: implement user profile page
-                'fix',  // fix: correct typo in user profile page
-                'docs', // docs: add jsdoc to user profile page
-                'style', // style: add css to user profile page
-                'refactor', // refactor: extract user profile page to component
-                'perf', // perf: improve user profile page load time
-                'test', // test: add unit test for user profile page
-                'build', // build: update webpack config
-                'ci',   // ci: add github actions
-                'chore',    // chore: update dependencies
-                'revert'    // revert: revert changes
+                'feat',  // feat: Implement user profile page
+                'fix',  // fix: Correct typo in user profile page
+                'docs', // docs: Add jsdoc to user profile page
+                'style', // style: Add css to user profile page
+                'refactor', // refactor: Extract user profile page to component
+                'perf', // perf: Improve user profile page load time
+                'test', // test: Add unit test for user profile page
+                'build', // build: Update webpack config
+                'ci',   // ci: Add github actions
+                'chore',    // chore: Update dependencies
+                'revert'    // revert: Revert changes
             ]
         ],
         'subject-case': [2, 'always', 'sentence-case']
