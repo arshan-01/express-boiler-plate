@@ -1,14 +1,14 @@
-// Import all routes here and use them in the app
-// routes/index.js
-import express from 'express'
-import userRoute from './user.route.js'
+import { Router } from "express";
+import { healthRouter } from "../modules/health/health.route.js";
+import { userRouter } from "../modules/user/user.route.js";
+import { notifyRouter } from "../modules/notify/notify.route.js";
 
-const router = express.Router()
+const apiRouter = Router();
 
-// Define routes
-router.use('/user', userRoute)
-// Add other routes here
-// router.use('/users', userRoutes);
-// router.use('/another', anotherRoutes);
+apiRouter.use("/health", healthRouter);
+apiRouter.use("/users", userRouter);
+apiRouter.use("/notify", notifyRouter);
 
-export default router
+export { apiRouter };
+
+
