@@ -1,5 +1,5 @@
 {
-  "name": "backend-express-template",
+  "name": "founder-club",
   "version": "1.0.0",
   "description": "Scalable Node.js + Express backend template with MongoDB, Zod, Redis, BullMQ, global error handling, and response helpers.",
   "main": "src/server.js",
