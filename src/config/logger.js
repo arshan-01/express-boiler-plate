@@ -1,8 +1,16 @@
 import pino from "pino";
 import { config } from "./env.js";
+import { getRequestContext } from "../observability/requestContext.js";
 
 const logger = pino({
-  level: process.env.LOG_LEVEL || "info",
+  level: config.logLevel,
+  mixin() {
+    const requestContext = getRequestContext();
+    if (!requestContext?.requestId) {
+      return {};
+    }
+    return { requestId: requestContext.requestId };
+  },
   transport:
     config.nodeEnv === "development"
       ? {

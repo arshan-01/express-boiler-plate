@@ -42,10 +42,25 @@ function errorHandler(err, req, res, next) {
     details = err.keyValue;
   }
 
-  logger.error(
-    { err, statusCode, path: req.originalUrl, method: req.method },
-    "Request error"
-  );
+  // Error logging with context
+  const requestId = req.requestId || req.id;
+  const logPayload = {
+    err,
+    statusCode,
+    path: req.originalUrl,
+    method: req.method,
+    requestId
+  };
+
+  // 4xx errors are often expected (unauthenticated user, validation errors, etc).
+  // Log them as warn/info to avoid noisy "error" logs in development.
+  if (statusCode >= 500) {
+    logger.error(logPayload, "Request error");
+  } else if (statusCode === 401 && req.originalUrl?.includes("/api/auth/me")) {
+    logger.info(logPayload, "Request unauthorized");
+  } else {
+    logger.warn(logPayload, "Request rejected");
+  }
 
   return res.status(statusCode).json({
     success: false,
