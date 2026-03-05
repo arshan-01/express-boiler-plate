@@ -1,13 +1,18 @@
 import { Router } from "express";
-import { healthRouter } from "../modules/health/health.route.js";
-import { userRouter } from "../modules/user/user.route.js";
-import { notifyRouter } from "../modules/notify/notify.route.js";
+import { versionNegotiation, validateVersion } from "../middlewares/apiVersioning.js";
+import { v1Router } from "./v1/index.js";
 
 const apiRouter = Router();
 
-apiRouter.use("/health", healthRouter);
-apiRouter.use("/users", userRouter);
-apiRouter.use("/notify", notifyRouter);
+// API versioning middleware
+apiRouter.use(versionNegotiation);
+apiRouter.use(validateVersion([1])); // Currently support v1
+
+// Versioned routes
+apiRouter.use("/v1", v1Router);
+
+// Default to v1 for backward compatibility
+apiRouter.use("/", v1Router);
 
 export { apiRouter };
 

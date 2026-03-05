@@ -1,141 +1,463 @@
-# Backend Express Template
+# Express Boilerplate - Production-Ready Starter Template
 
-Scalable Node.js/Express starter with MongoDB (Mongoose), Redis, BullMQ, Zod validation, global error/response helpers, and modular routing.
+A comprehensive, production-ready Express.js boilerplate with MongoDB, Redis, BullMQ, comprehensive security, API versioning, caching, rate limiting, file handling, monitoring, and more.
 
-## Stack
-- Node.js (ESM) + Express
-- MongoDB via Mongoose
-- Redis + BullMQ
-- Zod validation
-- Pino logging
+## 🚀 Features
 
-## Setup
-1) Install deps  
+### Core Infrastructure
+- ✅ **Environment Validation** - Zod schema validation on startup
+- ✅ **Logging** - Pino logger with request ID injection
+- ✅ **Database Connections** - MongoDB with pooling, Redis singleton
+- ✅ **Error Handling** - Global error handler with contextual logging
+- ✅ **Security Middleware** - Helmet, CORS, mongo-sanitize, HPP
+- ✅ **Request Utilities** - Request ID, async handler, request context
+- ✅ **Graceful Shutdown** - Proper cleanup on SIGTERM/SIGINT
+
+### Advanced Features
+- ✅ **API Versioning** - Versioned routes with deprecation headers
+- ✅ **Rate Limiting** - Redis-backed rate limiting (IP, per-user, feature-based)
+- ✅ **Caching Layer** - Redis caching utilities and middleware
+- ✅ **Pagination & Filtering** - Built-in pagination, sorting, filtering helpers
+- ✅ **File Handling** - File uploads with validation and storage abstraction
+- ✅ **Database Migrations** - Migration system and seed scripts
+- ✅ **Monitoring & Metrics** - Prometheus metrics endpoint
+- ✅ **Security Enhancements** - API key auth, IP whitelisting, CSRF protection
+- ✅ **Development Tools** - Debug endpoints, seeding utilities
+
+## 📦 Stack
+
+- **Runtime**: Node.js (ESM)
+- **Framework**: Express.js
+- **Database**: MongoDB (Mongoose)
+- **Cache/Queue**: Redis (ioredis)
+- **Job Queue**: BullMQ
+- **Validation**: Zod
+- **Logging**: Pino
+- **Real-time**: Socket.io with Redis adapter
+
+## 🛠️ Setup
+
+### 1. Install Dependencies
+
 ```bash
 npm install
 ```
-2) Copy env and adjust values  
+
+### 2. Configure Environment
+
 ```bash
 cp env.example .env
 ```
-3) Start dev server  
+
+Edit `.env` with your configuration:
+- MongoDB connection string
+- Redis connection details
+- JWT secret
+- SMTP settings (optional)
+- CORS origins
+
+### 3. Run Migrations (Optional)
+
+```bash
+npm run migrate
+```
+
+### 4. Seed Database (Optional)
+
+```bash
+npm run seed
+```
+
+### 5. Start Development Server
+
 ```bash
 npm run dev
 ```
 
-## Structure
-- `src/config/env.js` – centralized config object (no Zod validation, plain object)
-- `src/config/logger.js` – pino logger
-- `src/config/mongo.js` – MongoDB connection with pooling
-- `src/config/redis.js` – Redis connection (BullMQ compatible)
-- `src/utils/` – async handler, AppError, api response
-- `src/middlewares/` – error/404 handlers, validator
-- `src/modules/` – feature modules
-  - `health` – simple health route
-  - `user` – sample CRUD list/create with zod schemas
-  - `notify` – email & notification queue endpoints
-- `src/routes/index.js` – API router mounting modules
-- `src/queues/queues.js` – BullMQ queues
-- `src/queues/workers.js` – BullMQ workers with concurrency & rate limiting
-- `src/services/mailer.js` – Nodemailer transporter + send helper
-- `src/services/notification.js` – socket notification dispatcher
-- `src/realtime/socket.js` – Socket.io gateway with Redis adapter (multi-instance support)
-- `src/app.js` – express app setup
-- `src/server.js` – bootstrap: connect DB/redis, start workers & server
-- `src/worker.js` – standalone worker process (optional, for separate scaling)
+## 📁 Project Structure
 
-## Example routes
-- `GET /api/health` – uptime + timestamp
-- `GET /api/users?limit=20&offset=0` – list users
-- `POST /api/users` – create user  
-  body: `{ "email": "a@b.com", "name": "Jane", "role": "user" }`
-
-## Queues
-- Queues: `email`, `notification`.
-- Push email jobs:
-```js
-import { emailQueue } from "./queues/queues.js";
-await emailQueue.add("send", { to: "a@b.com", subject: "Hi" });
 ```
-- Push notification jobs (socket dispatch):
-```js
-import { notificationQueue } from "./queues/queues.js";
-await notificationQueue.add("dispatch", { userId: "123", channel: "notification", payload: { msg: "Hello" } });
-```
-
-## Email (Nodemailer)
-- Configure SMTP in `.env` (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `FROM_EMAIL`, `EMAIL_FROM`).
-- Use `sendMail` directly or enqueue via `email` queue.
-
-## Realtime Notifications (Socket.io)
-- Clients connect to the same host (HTTP server) via Socket.io.
-- Provide `userId` in connection query; server joins a room keyed by that user.
-- Notifications worker emits to the user room: `io.to(userId).emit(channel, payload)`.
-- Example client:
-```js
-import { io } from "socket.io-client";
-const socket = io("http://localhost:4000", { query: { userId: "123" } });
-socket.on("notification", (data) => console.log("notification", data));
+src/
+├── config/              # Configuration files
+│   ├── env.js           # Validated config object
+│   ├── env.schema.js    # Zod environment schema
+│   ├── logger.js        # Pino logger with request ID
+│   ├── mongo.js         # MongoDB connection
+│   └── redis.js         # Redis singleton
+├── middlewares/         # Express middlewares
+│   ├── apiVersioning.js # API versioning
+│   ├── auth.js         # Authentication (API key, IP whitelist, CSRF)
+│   ├── errorHandler.js # Global error handler
+│   ├── rateLimiter.js  # Rate limiting
+│   ├── requestId.js    # Request ID injection
+│   ├── security.js     # Security middleware
+│   ├── throttle.js     # Per-user throttling & quotas
+│   ├── upload.js        # File upload middleware
+│   └── validate.js      # Request validation
+├── modules/            # Feature modules
+│   ├── health/         # Health check endpoint
+│   ├── metrics/        # Metrics endpoints
+│   └── debug/          # Debug endpoints (dev only)
+├── routes/             # Route organization
+│   ├── index.js        # Main API router
+│   └── v1/             # Version 1 routes
+├── utils/              # Utility functions
+│   ├── apiResponse.js  # Response helpers
+│   ├── appError.js     # Custom error class
+│   ├── asyncHandler.js # Async wrapper
+│   ├── cache.js        # Caching utilities
+│   ├── metrics.js      # Metrics collection
+│   ├── pagination.js   # Pagination helpers
+│   └── storage.js      # File storage abstraction
+├── db/                 # Database utilities
+│   ├── migrations/     # Migration system
+│   └── seeds/          # Seed scripts
+├── queues/             # BullMQ queues
+├── services/           # Business logic services
+├── realtime/           # Socket.io setup
+├── app.js              # Express app configuration
+└── server.js           # Server bootstrap
 ```
 
-## Scalability Features
+## 🔌 API Endpoints
 
-### ✅ Production-Ready Architecture
+### Health & Monitoring
 
-1. **MongoDB Connection Pooling**
-   - Configured connection pool (min: 2, max: 10)
-   - Automatic retry logic for reads/writes
-   - Connection timeout and error handling
+- `GET /` - Basic health check
+- `GET /api/v1/health` - Detailed health check (DB, Redis status)
+- `GET /api/v1/metrics/prometheus` - Prometheus metrics
+- `GET /api/v1/metrics/json` - JSON metrics
+- `GET /api/v1/debug/*` - Debug endpoints (development only)
 
-2. **Redis for Horizontal Scaling**
-   - Socket.io Redis adapter for multi-instance support
-   - BullMQ queues work across multiple server instances
-   - Shared state via Redis
+### API Versioning
 
-3. **Worker Scalability**
-   - Workers can run in separate processes (`npm run worker`)
-   - Configurable concurrency per worker
-   - Rate limiting per queue
-   - Graceful shutdown handling
+The API supports versioning via:
+- Path: `/api/v1/users`
+- Query parameter: `/api/users?version=1`
+- Accept header: `Accept: application/vnd.api+json;version=1`
 
-4. **Graceful Shutdown**
-   - Proper cleanup of HTTP server, Socket.io, workers, Redis, and MongoDB
-   - Handles SIGINT/SIGTERM signals
-   - Unhandled rejection/exception handling
+Default routes (without version) map to v1 for backward compatibility.
 
-5. **Modular Structure**
-   - Feature-based modules (`src/modules/`)
-   - Separation of concerns (controllers, routes, schemas, models)
-   - Reusable services and utilities
+## 🔐 Security Features
 
-### Running Workers Separately
+### Built-in Security
 
-For better scalability, run workers in separate processes:
+- **Helmet** - Security headers
+- **CORS** - Configurable origins
+- **mongo-sanitize** - NoSQL injection prevention
+- **HPP** - HTTP Parameter Pollution prevention
+- **Rate Limiting** - Redis-backed, configurable per route
+- **Request ID** - Request tracking and correlation
+
+### Additional Security Middleware
+
+```javascript
+import { apiKeyAuth, ipWhitelist, csrfProtection } from "./middlewares/auth.js";
+
+// API Key authentication
+app.use("/api/admin", apiKeyAuth(async (key) => {
+  // Validate API key
+  return await validateApiKey(key);
+}));
+
+// IP whitelisting
+app.use("/api/internal", ipWhitelist(["127.0.0.1", "10.0.0.0/8"]));
+
+// CSRF protection
+app.use(csrfProtection(async (token, req) => {
+  // Validate CSRF token
+  return await validateCsrfToken(token, req);
+}));
+```
+
+## 📊 Rate Limiting
+
+### IP-based Rate Limiting
+
+```javascript
+import { apiLimiter, authLimiter } from "./middlewares/rateLimiter.js";
+
+app.use("/api", apiLimiter); // 100 requests per 15 minutes
+app.use("/api/auth", authLimiter); // 5 requests per 15 minutes
+```
+
+### Per-User Rate Limiting
+
+```javascript
+import { perUserLimiter } from "./middlewares/throttle.js";
+
+app.use("/api/users", perUserLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 100
+}));
+```
+
+### Feature-based Quotas
+
+```javascript
+import { featureQuotaLimiter, usageTracker } from "./middlewares/throttle.js";
+
+app.post("/api/upload",
+  featureQuotaLimiter("file-uploads", { max: 10, windowMs: 3600000 }),
+  usageTracker("file-uploads"),
+  uploadSingle("file"),
+  handler
+);
+```
+
+## 💾 Caching
+
+### Cache Utilities
+
+```javascript
+import { getCache, setCache, deleteCache, cacheMiddleware } from "./utils/cache.js";
+
+// Manual caching
+await setCache("user:123", userData, 3600); // TTL: 1 hour
+const user = await getCache("user:123");
+await deleteCache("user:123");
+
+// Cache middleware
+app.get("/api/users/:id",
+  cacheMiddleware({ ttl: 300, keyGenerator: (req) => `user:${req.params.id}` }),
+  handler
+);
+```
+
+## 📄 Pagination & Filtering
+
+```javascript
+import { parsePagination, parseSorting, parseFiltering, paginatedResponse } from "./utils/pagination.js";
+
+// In your route handler
+const pagination = parsePagination(req.query);
+const sort = parseSorting(req.query, ["name", "email", "createdAt"]);
+const filter = parseFiltering(req.query, {
+  searchFields: ["name", "email"]
+});
+
+const [data, total] = await Promise.all([
+  User.find(filter).sort(sort).skip(pagination.offset).limit(pagination.limit),
+  User.countDocuments(filter)
+]);
+
+return paginatedResponse(res, data, total, pagination);
+```
+
+## 📤 File Uploads
+
+### Basic Upload
+
+```javascript
+import { uploadSingle, fileUploadValidator } from "./middlewares/upload.js";
+import { storage } from "./utils/storage.js";
+
+app.post("/api/upload",
+  uploadSingle("file", {
+    maxSize: 5 * 1024 * 1024, // 5MB
+    allowedMimeTypes: ["image/jpeg", "image/png"]
+  }),
+  fileUploadValidator({
+    maxSize: 5 * 1024 * 1024,
+    allowedMimeTypes: ["image/jpeg", "image/png"]
+  }),
+  async (req, res) => {
+    const filename = generateFilename(req.file.originalname);
+    await storage.save(req.file, filename);
+    ok(res, { url: storage.getUrl(filename) }, "File uploaded");
+  }
+);
+```
+
+## 🔄 Database Migrations
+
+### Create Migration
+
+Add to `src/db/migrations/migrations.js`:
+
+```javascript
+{
+  name: "002-add-user-indexes",
+  up: async () => {
+    const db = mongoose.connection.db;
+    await db.collection("users").createIndex({ email: 1 });
+  }
+}
+```
+
+### Run Migrations
 
 ```bash
-# Development
-npm run worker:dev
+npm run migrate
+```
 
-# Production
+## 🌱 Database Seeding
+
+### Create Seed
+
+Add to `src/db/seeds/seeds.js`:
+
+```javascript
+{
+  name: "sample-data",
+  run: async () => {
+    // Insert seed data
+  },
+  clear: async () => {
+    // Clear seed data
+  }
+}
+```
+
+### Run Seeds
+
+```bash
+npm run seed
+```
+
+## 📈 Monitoring & Metrics
+
+### Prometheus Metrics
+
+Access metrics at `/api/v1/metrics/prometheus`:
+
+```
+http_requests_total{method="GET",status="200",route="/api/users"} 150
+http_request_duration_ms_sum{method="GET",route="/api/users"} 4500
+http_request_duration_ms_count{method="GET",route="/api/users"} 150
+```
+
+### Custom Metrics
+
+```javascript
+import { metrics } from "./utils/metrics.js";
+
+// Increment counter
+metrics.increment("api_calls", { endpoint: "/users" });
+
+// Set gauge
+metrics.setGauge("active_users", 150);
+
+// Record histogram
+metrics.recordHistogram("response_time", 250, { endpoint: "/users" });
+```
+
+## 🧪 Development Tools
+
+### Debug Endpoints (Development Only)
+
+- `GET /api/v1/debug/info` - Server info (memory, uptime, etc.)
+- `GET /api/v1/debug/redis` - Redis connection info
+- `GET /api/v1/debug/mongo` - MongoDB connection info
+
+### Scripts
+
+```bash
+npm run dev          # Start dev server with watch mode
+npm run start        # Start production server
+npm run worker       # Start worker process
+npm run worker:dev   # Start worker with watch mode
+npm run migrate      # Run database migrations
+npm run seed         # Seed database
+```
+
+## 🔄 Background Jobs
+
+### Using BullMQ
+
+```javascript
+import { emailQueue } from "./queues/queues.js";
+
+// Add job
+await emailQueue.add("send", {
+  to: "user@example.com",
+  subject: "Welcome",
+  html: "<h1>Welcome!</h1>"
+});
+```
+
+Workers are automatically started with the server. Run workers separately:
+
+```bash
 npm run worker
 ```
 
-This allows you to:
-- Scale HTTP servers independently from workers
-- Run multiple worker instances for high throughput
-- Isolate worker failures from HTTP server
+## 📝 Request Validation
 
-### Horizontal Scaling
+### Body Validation
 
-1. **Multiple HTTP Instances**: Run multiple `npm start` processes behind a load balancer
-2. **Multiple Worker Instances**: Run multiple `npm run worker` processes
-3. **Socket.io**: Uses Redis adapter, so sockets work across all instances
-4. **Queues**: BullMQ distributes jobs across all worker instances
+```javascript
+import { validateBody } from "./middlewares/validate.js";
+import { z } from "zod";
 
-## Notes
-- Global error handler formats Zod, Mongoose validation, cast, and duplicate key errors.
-- Responses standardized via `apiResponse`.
-- CORS configured via `CORS_ORIGINS` env variable.
-- All environment variables loaded via Node.js `--env-file` flag (no dotenv needed).
+const schema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1)
+});
 
+app.post("/api/users", validateBody(schema), handler);
+```
 
+### Query Validation
+
+```javascript
+import { validateQuery, querySchemas } from "./middlewares/validate.js";
+
+const schema = querySchemas.pagination.merge(querySchemas.sorting);
+
+app.get("/api/users", validateQuery(schema), handler);
+```
+
+## 🎯 Response Helpers
+
+```javascript
+import {
+  ok, created, noContent, badRequest,
+  unauthorized, forbidden, notFound, conflict
+} from "./utils/apiResponse.js";
+
+ok(res, data, "Success");
+created(res, newUser, "User created");
+noContent(res);
+badRequest(res, "Invalid input", details);
+unauthorized(res, "Authentication required");
+forbidden(res, "Access denied");
+notFound(res, "Resource not found");
+conflict(res, "Email already exists", { email });
+```
+
+## 🚀 Production Deployment
+
+### Environment Variables
+
+Ensure all required environment variables are set:
+- `MONGODB_URI` - MongoDB connection string
+- `JWT_SECRET` - JWT signing secret
+- `REDIS_HOST` / `REDIS_URL` - Redis connection
+- `NODE_ENV=production` - Production mode
+
+### Scaling
+
+1. **Horizontal Scaling**: Run multiple server instances behind a load balancer
+2. **Worker Scaling**: Run multiple worker processes: `npm run worker`
+3. **Database**: Use MongoDB replica sets
+4. **Cache**: Use Redis cluster for high availability
+
+### Health Checks
+
+Monitor `/api/v1/health` endpoint for service health.
+
+## 📚 Additional Resources
+
+- [Express.js Documentation](https://expressjs.com/)
+- [Mongoose Documentation](https://mongoosejs.com/)
+- [BullMQ Documentation](https://docs.bullmq.io/)
+- [Zod Documentation](https://zod.dev/)
+
+## 📄 License
+
+MIT
+
+---
+
+**Built with ❤️ for production-ready Express.js applications**

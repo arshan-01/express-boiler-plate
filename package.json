@@ -9,6 +9,8 @@
     "start": "node --env-file=.env src/server.js",
     "worker": "node --env-file=.env src/worker.js",
     "worker:dev": "node --watch --env-file=.env src/worker.js",
+    "migrate": "node --env-file=.env scripts/migrate.js",
+    "seed": "node --env-file=.env scripts/seed.js",
     "lint": "node -e \"console.log('No linter configured. Add eslint if you want.')\""
   },
   "dependencies": {
@@ -26,6 +28,7 @@
     "ioredis": "^5.4.1",
     "mongoose": "^8.7.0",
     "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.15",
     "pino": "^9.4.0",
     "pino-pretty": "^11.2.2",
