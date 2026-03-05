@@ -5,15 +5,19 @@ import { logger } from "../config/logger.js";
 import { redis } from "../config/redis.js";
 
 let io;
+let pubClient;
 
 function initSocket(server) {
+  // Create and store the duplicate Redis client for the adapter
+  pubClient = redis.duplicate();
+  
   io = new Server(server, {
     cors: {
       origin: config.cors.origins,
       credentials: true
     },
     // Enable scaling across multiple instances
-    adapter: createAdapter(redis, redis.duplicate())
+    adapter: createAdapter(redis, pubClient)
   });
 
   io.on("connection", (socket) => {
@@ -41,6 +45,10 @@ async function closeSocket() {
   if (io) {
     io.close();
     logger.info("Socket.io closed");
+  }
+  if (pubClient) {
+    await pubClient.quit();
+    logger.info("Redis pub client closed");
   }
 }
 
