@@ -19,13 +19,21 @@ export function apiKeyAuth(keyValidator) {
     }
 
     try {
-      const isValid = await keyValidator(apiKey);
-      if (!isValid) {
+      const validationResult = await keyValidator(apiKey);
+      if (!validationResult) {
         return unauthorized(res, "Invalid API key");
       }
 
-      // Attach API key info to request
+      // Keep raw key compatibility, but expose only safe auth context to logs.
       req.apiKey = apiKey;
+      req.auth = {
+        ...(req.auth || {}),
+        type: "apiKey",
+        userId: validationResult.userId || req.auth?.userId || null,
+        apiKey: {
+          id: validationResult.id || validationResult.apiKeyId || null
+        }
+      };
       next();
     } catch (err) {
       logger.error({ err }, "API key validation error");

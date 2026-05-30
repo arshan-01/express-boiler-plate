@@ -1,5 +1,6 @@
 import mongoSanitize from "express-mongo-sanitize";
 import hpp from "hpp";
+import { logger } from "../config/logger.js";
 
 /**
  * Security middleware stack
@@ -15,7 +16,10 @@ export function securityMiddleware(app) {
       onSanitize: ({ req, key }) => {
         // Log sanitization in development
         if (process.env.NODE_ENV === "development") {
-          console.warn(`Sanitized key: ${key} in request`);
+          logger.warn(
+            { key, requestId: req.requestId || req.id },
+            "Sanitized request key"
+          );
         }
       }
     })

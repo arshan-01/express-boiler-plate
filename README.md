@@ -6,7 +6,7 @@ A comprehensive, production-ready Express.js boilerplate with MongoDB, Redis, Bu
 
 ### Core Infrastructure
 - ✅ **Environment Validation** - Zod schema validation on startup
-- ✅ **Logging** - Pino logger with request ID injection
+- ✅ **Logging** - Winston structured logger with request ID injection and redaction
 - ✅ **Database Connections** - MongoDB with pooling, Redis singleton
 - ✅ **Error Handling** - Global error handler with contextual logging
 - ✅ **Security Middleware** - Helmet, CORS, mongo-sanitize, HPP
@@ -32,7 +32,7 @@ A comprehensive, production-ready Express.js boilerplate with MongoDB, Redis, Bu
 - **Cache/Queue**: Redis (ioredis)
 - **Job Queue**: BullMQ
 - **Validation**: Zod
-- **Logging**: Pino
+- **Logging**: Winston
 - **Real-time**: Socket.io with Redis adapter
 
 ## 🛠️ Setup
@@ -81,7 +81,7 @@ src/
 ├── config/              # Configuration files
 │   ├── env.js           # Validated config object
 │   ├── env.schema.js    # Zod environment schema
-│   ├── logger.js        # Pino logger with request ID
+│   ├── logger.js        # Winston logger with request ID and redaction
 │   ├── mongo.js         # MongoDB connection
 │   └── redis.js         # Redis singleton
 ├── middlewares/         # Express middlewares
@@ -90,6 +90,7 @@ src/
 │   ├── errorHandler.js # Global error handler
 │   ├── rateLimiter.js  # Rate limiting
 │   ├── requestId.js    # Request ID injection
+│   ├── requestLogger.js # Safe structured HTTP request logging
 │   ├── security.js     # Security middleware
 │   ├── throttle.js     # Per-user throttling & quotas
 │   ├── upload.js        # File upload middleware

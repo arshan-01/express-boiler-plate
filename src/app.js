@@ -1,13 +1,12 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import morgan from "morgan";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 
 import { config } from "./config/env.js";
-import { logger } from "./config/logger.js";
 import { requestId } from "./middlewares/requestId.js";
+import { requestLogger } from "./middlewares/requestLogger.js";
 import { securityMiddleware } from "./middlewares/security.js";
 import { apiLimiter } from "./middlewares/rateLimiter.js";
 import { apiRouter } from "./routes/index.js";
@@ -47,23 +46,12 @@ function createApp() {
     })
   );
 
-  // Request ID middleware (must be before morgan)
+  // Request ID middleware (must be before request logging)
   app.use(requestId);
+  app.use(requestLogger);
 
   // Security middleware (mongo-sanitize, HPP)
   securityMiddleware(app);
-
-  // HTTP request logging via Morgan, piped through Pino
-  app.use(
-    morgan(":method :url :status :res[content-length] - :response-time ms requestId=:request-id", {
-      immediate: false,
-      skip: (req) => req.originalUrl?.startsWith("/uploads/thumbnails"),
-      stream: { write: (msg) => logger.info(msg.trim()) }
-    })
-  );
-
-  // Custom token for request ID in morgan
-  morgan.token("request-id", (req) => req.requestId || req.id || "-");
 
   // Health check endpoint (no rate limiting)
   app.get("/", (req, res) => res.json({ ok: true, service: "backend-template" }));
@@ -78,5 +66,4 @@ function createApp() {
 }
 
 export { createApp };
-
 
