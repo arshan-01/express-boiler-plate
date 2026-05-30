@@ -153,4 +153,4 @@ const logger = {
   child: () => logger
 };
 
-export { logger, redact };
+export { logger, redact, isSensitiveKey };

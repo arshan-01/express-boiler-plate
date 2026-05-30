@@ -1,14 +1,37 @@
-import { logger } from "../config/logger.js";
+import { isSensitiveKey, logger } from "../config/logger.js";
+
+const URL_BASE = "http://localhost";
 
 function getResponseTimeMs(startedAt) {
   const diff = process.hrtime.bigint() - startedAt;
   return Number(diff) / 1_000_000;
 }
 
+function sanitizeUrl(rawUrl) {
+  if (!rawUrl) {
+    return rawUrl;
+  }
+
+  try {
+    const url = new URL(rawUrl, URL_BASE);
+    for (const key of [...url.searchParams.keys()]) {
+      if (isSensitiveKey(key)) {
+        url.searchParams.set(key, "[REDACTED]");
+      }
+    }
+
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return rawUrl;
+  }
+}
+
 function buildRequestLog(req, res, startedAt) {
+  const url = req.originalUrl || req.url;
+
   return {
     method: req.method,
-    url: req.originalUrl || req.url,
+    url: sanitizeUrl(url),
     statusCode: res.statusCode,
     requestId: req.id || req.requestId,
     responseTimeMs: Number(getResponseTimeMs(startedAt).toFixed(2)),
