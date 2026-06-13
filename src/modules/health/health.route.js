@@ -30,10 +30,27 @@ healthRouter.get("/", async (req, res) => {
     health.services.database = "error";
   }
 
-  // Check Redis connection
+  // Check Redis connection + memory usage
   try {
     await redis.ping();
     health.services.redis = "connected";
+
+    const info = await redis.info("memory");
+    const stats = {};
+    for (const line of info.split("\r\n")) {
+      if (!line || line.startsWith("#")) continue;
+      const [k, v] = line.split(":");
+      if (
+        k === "used_memory_human" ||
+        k === "used_memory_peak_human" ||
+        k === "used_memory_rss_human" ||
+        k === "maxmemory_human" ||
+        k === "mem_fragmentation_ratio"
+      ) {
+        stats[k] = v;
+      }
+    }
+    health.redis = stats;
   } catch (err) {
     health.services.redis = "disconnected";
   }
