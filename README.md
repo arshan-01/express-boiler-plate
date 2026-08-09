@@ -120,6 +120,13 @@ src/
 └── server.js           # Server bootstrap
 ```
 
+### Future Architecture TODO
+
+- Move this template closer to **Pure Modular Architecture** over time.
+- Keep each feature/domain self-contained inside `src/modules/<domain>/`.
+- Prefer module-owned route, controller, service, repository, schema, model, jobs, and workers when they belong to one domain.
+- Keep shared folders only for true cross-cutting infrastructure such as config, logging, common middleware, response helpers, and database connection setup.
+
 ## 🔌 API Endpoints
 
 ### Health & Monitoring
