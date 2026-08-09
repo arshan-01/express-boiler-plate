@@ -224,7 +224,7 @@ app.get("/users/:id",
 );
 ```
 
-## 📄 Pagination & Filtering
+## 📄 Cursor Pagination & Filtering
 
 ```javascript
 import { parsePagination, paginatedResponse } from "./utils/pagination.js";
@@ -233,12 +233,12 @@ import * as userService from "./modules/user/user.service.js";
 // In your route handler, parse HTTP input and call a service.
 const pagination = parsePagination(req.query);
 
-const { items, total } = await userService.listUsers({
+const { items, hasNext, nextCursor, limit } = await userService.listUsers({
   limit: pagination.limit,
-  offset: pagination.offset
+  cursor: pagination.cursor
 });
 
-return paginatedResponse(res, items, total, pagination);
+return paginatedResponse(res, items, { limit, hasNext, nextCursor });
 
 // If a route supports filtering or sorting, keep SQL-specific
 // where/order/query details inside the domain repository.

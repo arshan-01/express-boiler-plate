@@ -1,4 +1,5 @@
 import { getSql } from "../../config/postgres.js";
+import { createCursorPage, decodeCursor } from "../../utils/pagination.js";
 import { mapUserRow } from "./user.model.js";
 
 async function findUserByEmail(email) {
@@ -22,20 +23,33 @@ async function createUser(userInput) {
   return mapUserRow(user);
 }
 
-async function listUsers({ limit, offset }) {
+async function listUsers({ limit, cursor }) {
   const sql = getSql();
-  const [items, total] = await Promise.all([
-    sql`
+  const cursorData = decodeCursor(cursor);
+  const rows = cursorData
+    ? await sql`
+      SELECT id, email, name, role, created_at, updated_at
+      FROM users
+      WHERE (created_at, id) < (${cursorData.createdAt}::timestamptz, ${cursorData.id}::uuid)
+      ORDER BY created_at DESC
+      LIMIT ${limit + 1}
+    `
+    : await sql`
       SELECT id, email, name, role, created_at, updated_at
       FROM users
       ORDER BY created_at DESC
-      LIMIT ${limit}
-      OFFSET ${offset}
-    `,
-    sql`SELECT count(*)::int AS total FROM users`
-  ]);
+      LIMIT ${limit + 1}
+    `;
 
-  return { items: items.map(mapUserRow), total: total[0].total };
+  const page = createCursorPage(rows, limit, (row) => ({
+    createdAt: row.created_at,
+    id: row.id
+  }));
+
+  return {
+    ...page,
+    items: page.items.map(mapUserRow)
+  };
 }
 
 export { createUser, findUserByEmail, listUsers };

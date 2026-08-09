@@ -11,9 +11,9 @@ async function createUser(userInput) {
   return { id: user.id, email: user.email, name: user.name, role: user.role };
 }
 
-async function listUsers({ limit, offset }) {
-  const { items, total } = await userRepository.listUsers({ limit, offset });
-  return { items, total, limit, offset };
+async function listUsers({ limit, cursor }) {
+  const { items, hasNext, nextCursor } = await userRepository.listUsers({ limit, cursor });
+  return { items, hasNext, nextCursor, limit };
 }
 
 export { createUser, listUsers };

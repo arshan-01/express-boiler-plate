@@ -15,12 +15,11 @@ const listUsersSchema = z.object({
   query: z
     .object({
       limit: z.coerce.number().int().positive().max(100).default(20),
-      offset: z.coerce.number().int().nonnegative().default(0)
+      cursor: z.string().min(1).optional()
     })
     .partial(),
   params: z.object({}).optional()
 });
 
 export { createUserSchema, listUsersSchema };
-
 

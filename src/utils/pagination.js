@@ -3,20 +3,55 @@
  */
 
 /**
- * Parse pagination parameters from query
+ * Parse cursor pagination parameters from query
  * @param {Object} query - Express query object
  * @param {Object} options - Default values
- * @returns {Object} Pagination parameters
+ * @returns {Object} Cursor pagination parameters
  */
 export function parsePagination(query, options = {}) {
-  const page = Math.max(1, parseInt(query.page, 10) || options.page || 1);
   const limit = Math.min(
-    100,
+    options.maxLimit || 100,
     Math.max(1, parseInt(query.limit, 10) || options.limit || 20)
   );
-  const offset = (page - 1) * limit;
+  const cursor = query.cursor || null;
 
-  return { page, limit, offset };
+  return { limit, cursor };
+}
+
+function encodeCursor(payload) {
+  return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+}
+
+function decodeCursor(cursor) {
+  if (!cursor) return null;
+
+  try {
+    return JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"));
+  } catch (err) {
+    throw new Error("Invalid pagination cursor");
+  }
+}
+
+function createCursorPage(items, limit, getCursorPayload) {
+  const hasNext = items.length > limit;
+  const pageItems = hasNext ? items.slice(0, limit) : items;
+  const lastItem = pageItems.at(-1);
+
+  return {
+    items: pageItems,
+    hasNext,
+    nextCursor: hasNext && lastItem ? encodeCursor(getCursorPayload(lastItem)) : null
+  };
+}
+
+function createCursorPaginationMeta({ limit, hasNext, nextCursor }) {
+  return {
+    pagination: {
+      limit,
+      hasNext,
+      nextCursor
+    }
+  };
 }
 
 /**
@@ -73,36 +108,25 @@ export function parseFiltering(query, options = {}) {
 
 /**
  * Create pagination metadata
- * @param {number} total - Total number of items
- * @param {number} page - Current page
  * @param {number} limit - Items per page
+ * @param {boolean} hasNext - Whether another page exists
+ * @param {string|null} nextCursor - Cursor for the next page
  * @returns {Object} Pagination metadata
  */
-export function createPaginationMeta(total, page, limit) {
-  const totalPages = Math.ceil(total / limit);
-  return {
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages,
-      hasNext: page < totalPages,
-      hasPrev: page > 1
-    }
-  };
+export function createPaginationMeta({ limit, hasNext, nextCursor }) {
+  return createCursorPaginationMeta({ limit, hasNext, nextCursor });
 }
 
 /**
  * Paginated response helper
  * @param {Object} res - Express response object
  * @param {Array} data - Array of items
- * @param {number} total - Total number of items
  * @param {Object} pagination - Pagination parameters
  * @param {string} message - Response message
  * @returns {Object} Paginated response
  */
-export function paginatedResponse(res, data, total, pagination, message = "OK") {
-  const meta = createPaginationMeta(total, pagination.page, pagination.limit);
+export function paginatedResponse(res, data, pagination, message = "OK") {
+  const meta = createPaginationMeta(pagination);
   return res.json({
     success: true,
     message,
@@ -110,3 +134,5 @@ export function paginatedResponse(res, data, total, pagination, message = "OK") 
     meta
   });
 }
+
+export { createCursorPage, decodeCursor, encodeCursor };
