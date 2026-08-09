@@ -1,5 +1,6 @@
 import { ok, created } from "../../utils/apiResponse.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
+import { createPaginationMeta, parsePagination } from "../../utils/pagination.js";
 import * as userService from "./user.service.js";
 
 const createUser = asyncHandler(async (req, res) => {
@@ -8,11 +9,9 @@ const createUser = asyncHandler(async (req, res) => {
 });
 
 const listUsers = asyncHandler(async (req, res) => {
-  const limit = req.query.limit ?? 20;
-  const offset = req.query.offset ?? 0;
-  const { items, total } = await userService.listUsers({ limit, offset });
-  return ok(res, items, "Users fetched", { total, limit, offset });
+  const pagination = parsePagination(req.query);
+  const { items, hasNext, nextCursor, limit } = await userService.listUsers(pagination);
+  return ok(res, items, "Users fetched", createPaginationMeta({ limit, hasNext, nextCursor }));
 });
 
 export { createUser, listUsers };
-

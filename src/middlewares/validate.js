@@ -78,7 +78,7 @@ function validateParams(schema) {
  */
 export const querySchemas = {
   pagination: z.object({
-    page: z.string().optional().transform((val) => (val ? parseInt(val, 10) : 1)),
+    cursor: z.string().optional(),
     limit: z.string().optional().transform((val) => (val ? parseInt(val, 10) : 20))
   }),
   sorting: z.object({
@@ -95,5 +95,4 @@ export const querySchemas = {
 };
 
 export { validate, validateQuery, validateBody, validateParams };
-
 
