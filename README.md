@@ -228,21 +228,21 @@ app.get("/api/users/:id",
 ## 📄 Pagination & Filtering
 
 ```javascript
-import { parsePagination, parseSorting, parseFiltering, paginatedResponse } from "./utils/pagination.js";
+import { parsePagination, paginatedResponse } from "./utils/pagination.js";
+import * as userService from "./modules/user/user.service.js";
 
-// In your route handler
+// In your route handler, parse HTTP input and call a service.
 const pagination = parsePagination(req.query);
-const sort = parseSorting(req.query, ["name", "email", "createdAt"]);
-const filter = parseFiltering(req.query, {
-  searchFields: ["name", "email"]
+
+const { items, total } = await userService.listUsers({
+  limit: pagination.limit,
+  offset: pagination.offset
 });
 
-const [data, total] = await Promise.all([
-  User.find(filter).sort(sort).skip(pagination.offset).limit(pagination.limit),
-  User.countDocuments(filter)
-]);
+return paginatedResponse(res, items, total, pagination);
 
-return paginatedResponse(res, data, total, pagination);
+// If a route supports filtering or sorting, keep Mongoose-specific
+// filter/sort/query details inside the domain repository.
 ```
 
 ## 📤 File Uploads
