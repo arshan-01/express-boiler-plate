@@ -16,7 +16,7 @@ export function versionNegotiation(req, res, next) {
   // Check query parameter: ?version=1
   const queryVersion = req.query.version;
   
-  // Check path parameter (if using /api/v1/ pattern)
+  // Check path parameter (if using /v1/ pattern)
   const pathVersion = req.path.match(/^\/v(\d+)\//)?.[1];
   
   // Priority: path > query > header
@@ -41,7 +41,7 @@ export function deprecationHeader(deprecatedVersion, sunsetDate) {
       res.setHeader("Sunset", sunsetDate);
       res.setHeader(
         "Link",
-        `<${req.protocol}://${req.get("host")}/api/v${deprecatedVersion + 1}>; rel="successor-version"`
+        `<${req.protocol}://${req.get("host")}/v${deprecatedVersion + 1}>; rel="successor-version"`
       );
     }
     next();

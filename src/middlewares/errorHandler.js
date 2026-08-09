@@ -56,7 +56,7 @@ function errorHandler(err, req, res, next) {
   // Log them as warn/info to avoid noisy "error" logs in development.
   if (statusCode >= 500) {
     logger.error(logPayload, "Request error");
-  } else if (statusCode === 401 && req.originalUrl?.includes("/api/auth/me")) {
+  } else if (statusCode === 401 && req.originalUrl?.includes("/auth/me")) {
     logger.info(logPayload, "Request unauthorized");
   } else {
     logger.warn(logPayload, "Request rejected");
@@ -70,5 +70,4 @@ function errorHandler(err, req, res, next) {
 }
 
 export { errorHandler };
-
 

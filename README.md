@@ -125,16 +125,16 @@ src/
 ### Health & Monitoring
 
 - `GET /` - Basic health check
-- `GET /api/v1/health` - Detailed health check (DB, Redis status)
-- `GET /api/v1/metrics/prometheus` - Prometheus metrics
-- `GET /api/v1/metrics/json` - JSON metrics
-- `GET /api/v1/debug/*` - Debug endpoints (development only)
+- `GET /v1/health` - Detailed health check (DB, Redis status)
+- `GET /v1/metrics/prometheus` - Prometheus metrics
+- `GET /v1/metrics/json` - JSON metrics
+- `GET /v1/debug/*` - Debug endpoints (development only)
 
 ### API Versioning
 
 The API supports versioning via:
-- Path: `/api/v1/users`
-- Query parameter: `/api/users?version=1`
+- Path: `/v1/users`
+- Query parameter: `/users?version=1`
 - Accept header: `Accept: application/vnd.api+json;version=1`
 
 Default routes (without version) map to v1 for backward compatibility.
@@ -156,13 +156,13 @@ Default routes (without version) map to v1 for backward compatibility.
 import { apiKeyAuth, ipWhitelist, csrfProtection } from "./middlewares/auth.js";
 
 // API Key authentication
-app.use("/api/admin", apiKeyAuth(async (key) => {
+app.use("/admin", apiKeyAuth(async (key) => {
   // Validate API key
   return await validateApiKey(key);
 }));
 
 // IP whitelisting
-app.use("/api/internal", ipWhitelist(["127.0.0.1", "10.0.0.0/8"]));
+app.use("/internal", ipWhitelist(["127.0.0.1", "10.0.0.0/8"]));
 
 // CSRF protection
 app.use(csrfProtection(async (token, req) => {
@@ -178,8 +178,8 @@ app.use(csrfProtection(async (token, req) => {
 ```javascript
 import { apiLimiter, authLimiter } from "./middlewares/rateLimiter.js";
 
-app.use("/api", apiLimiter); // 100 requests per 15 minutes
-app.use("/api/auth", authLimiter); // 5 requests per 15 minutes
+app.use(apiLimiter); // 100 requests per 15 minutes
+app.use("/auth", authLimiter); // 5 requests per 15 minutes
 ```
 
 ### Per-User Rate Limiting
@@ -187,7 +187,7 @@ app.use("/api/auth", authLimiter); // 5 requests per 15 minutes
 ```javascript
 import { perUserLimiter } from "./middlewares/throttle.js";
 
-app.use("/api/users", perUserLimiter({
+app.use("/users", perUserLimiter({
   windowMs: 15 * 60 * 1000,
   max: 100
 }));
@@ -198,7 +198,7 @@ app.use("/api/users", perUserLimiter({
 ```javascript
 import { featureQuotaLimiter, usageTracker } from "./middlewares/throttle.js";
 
-app.post("/api/upload",
+app.post("/upload",
   featureQuotaLimiter("file-uploads", { max: 10, windowMs: 3600000 }),
   usageTracker("file-uploads"),
   uploadSingle("file"),
@@ -219,7 +219,7 @@ const user = await getCache("user:123");
 await deleteCache("user:123");
 
 // Cache middleware
-app.get("/api/users/:id",
+app.get("/users/:id",
   cacheMiddleware({ ttl: 300, keyGenerator: (req) => `user:${req.params.id}` }),
   handler
 );
@@ -253,7 +253,7 @@ return paginatedResponse(res, items, total, pagination);
 import { uploadSingle, fileUploadValidator } from "./middlewares/upload.js";
 import { storage } from "./utils/storage.js";
 
-app.post("/api/upload",
+app.post("/upload",
   uploadSingle("file", {
     maxSize: 5 * 1024 * 1024, // 5MB
     allowedMimeTypes: ["image/jpeg", "image/png"]
@@ -320,12 +320,12 @@ npm run seed
 
 ### Prometheus Metrics
 
-Access metrics at `/api/v1/metrics/prometheus`:
+Access metrics at `/v1/metrics/prometheus`:
 
 ```
-http_requests_total{method="GET",status="200",route="/api/users"} 150
-http_request_duration_ms_sum{method="GET",route="/api/users"} 4500
-http_request_duration_ms_count{method="GET",route="/api/users"} 150
+http_requests_total{method="GET",status="200",route="/users"} 150
+http_request_duration_ms_sum{method="GET",route="/users"} 4500
+http_request_duration_ms_count{method="GET",route="/users"} 150
 ```
 
 ### Custom Metrics
@@ -347,9 +347,9 @@ metrics.recordHistogram("response_time", 250, { endpoint: "/users" });
 
 ### Debug Endpoints (Development Only)
 
-- `GET /api/v1/debug/info` - Server info (memory, uptime, etc.)
-- `GET /api/v1/debug/redis` - Redis connection info
-- `GET /api/v1/debug/mongo` - MongoDB connection info
+- `GET /v1/debug/info` - Server info (memory, uptime, etc.)
+- `GET /v1/debug/redis` - Redis connection info
+- `GET /v1/debug/mongo` - MongoDB connection info
 
 ### Scripts
 
@@ -396,7 +396,7 @@ const schema = z.object({
   name: z.string().min(1)
 });
 
-app.post("/api/users", validateBody(schema), handler);
+app.post("/users", validateBody(schema), handler);
 ```
 
 ### Query Validation
@@ -406,7 +406,7 @@ import { validateQuery, querySchemas } from "./middlewares/validate.js";
 
 const schema = querySchemas.pagination.merge(querySchemas.sorting);
 
-app.get("/api/users", validateQuery(schema), handler);
+app.get("/users", validateQuery(schema), handler);
 ```
 
 ## 🎯 Response Helpers
@@ -446,7 +446,7 @@ Ensure all required environment variables are set:
 
 ### Health Checks
 
-Monitor `/api/v1/health` endpoint for service health.
+Monitor `/v1/health` endpoint for service health.
 
 ## 📚 Additional Resources
 

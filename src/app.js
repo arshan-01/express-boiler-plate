@@ -56,8 +56,8 @@ function createApp() {
   // Health check endpoint (no rate limiting)
   app.get("/", (req, res) => res.json({ ok: true, service: "backend-template" }));
 
-  // API routes with rate limiting
-  app.use("/api", apiLimiter, apiRouter);
+  // Versioned routes with rate limiting
+  app.use(apiLimiter, apiRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
@@ -66,4 +66,3 @@ function createApp() {
 }
 
 export { createApp };
-
