@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { mongoose } from "../../config/mongo.js";
+import { pingPostgres } from "../../config/postgres.js";
 import { redis } from "../../config/redis.js";
 import { ok } from "../../utils/apiResponse.js";
 
@@ -20,12 +20,10 @@ healthRouter.get("/", async (req, res) => {
     }
   };
 
-  // Check MongoDB connection
+  // Check Postgres connection
   try {
-    const mongoState = mongoose.connection.readyState;
-    // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
-    health.services.database =
-      mongoState === 1 ? "connected" : mongoState === 2 ? "connecting" : "disconnected";
+    await pingPostgres();
+    health.services.database = "connected";
   } catch (err) {
     health.services.database = "error";
   }
@@ -67,5 +65,4 @@ healthRouter.get("/", async (req, res) => {
 });
 
 export { healthRouter };
-
 

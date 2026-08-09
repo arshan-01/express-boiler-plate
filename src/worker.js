@@ -1,6 +1,6 @@
 import { config } from "./config/env.js";
 import { logger } from "./config/logger.js";
-import { connectMongo, disconnectMongo } from "./config/mongo.js";
+import { connectPostgres, disconnectPostgres } from "./config/postgres.js";
 import { redis } from "./config/redis.js";
 import { startWorkers, stopWorkers } from "./queues/workers.js";
 
@@ -10,7 +10,7 @@ import { startWorkers, stopWorkers } from "./queues/workers.js";
  * Usage: node --env-file=.env src/worker.js
  */
 async function bootstrap() {
-  await connectMongo();
+  await connectPostgres();
   await redis.ping();
   startWorkers();
 
@@ -25,9 +25,9 @@ async function bootstrap() {
       logger.error({ err }, "Error closing Redis");
     }
     try {
-      await disconnectMongo();
+      await disconnectPostgres();
     } catch (err) {
-      logger.error({ err }, "Error closing MongoDB");
+      logger.error({ err }, "Error closing Postgres");
     }
     logger.info("Worker shutdown complete");
     process.exit(0);
@@ -44,4 +44,3 @@ bootstrap().catch((err) => {
   logger.fatal({ err }, "Failed to start worker");
   process.exit(1);
 });
-

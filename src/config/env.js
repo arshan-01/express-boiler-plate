@@ -11,9 +11,8 @@ export const config = {
   port: env.PORT,
   nodeEnv: env.NODE_ENV,
 
-  mongo: {
-    uri: env.MONGODB_URI,
-    dbName: env.DATABASE_NAME
+  postgres: {
+    url: env.DATABASE_URL
   },
 
   jwt: {

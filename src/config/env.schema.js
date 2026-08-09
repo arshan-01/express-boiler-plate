@@ -16,9 +16,8 @@ export const envSchema = z.object({
     .optional()
     .default("development"),
 
-  // MongoDB
-  MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
-  DATABASE_NAME: z.string().optional().default("express-boilerplate"),
+  // Postgres / Neon
+  DATABASE_URL: z.string().url("DATABASE_URL must be a valid Postgres connection URL"),
 
   // JWT
   JWT_SECRET: z.string().min(1, "JWT_SECRET is required"),

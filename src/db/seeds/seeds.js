@@ -1,4 +1,4 @@
-import { mongoose } from "../../config/mongo.js";
+import { getSql } from "../../config/postgres.js";
 import { logger } from "../../config/logger.js";
 
 /**
@@ -10,41 +10,32 @@ const seeds = [
   {
     name: "initial-users",
     run: async () => {
-      const db = mongoose.connection.db;
-      const usersCollection = db.collection("users");
-      
+      const sql = getSql();
+
       // Check if users already exist
-      const existingUsers = await usersCollection.countDocuments();
-      if (existingUsers > 0) {
+      const [existingUsers] = await sql`SELECT count(*)::int AS total FROM users`;
+      if (existingUsers.total > 0) {
         logger.info("Users already exist, skipping seed");
         return;
       }
-      
+
       // Insert seed users
-      await usersCollection.insertMany([
-        {
-          email: "admin@example.com",
-          name: "Admin User",
-          role: "admin",
-          createdAt: new Date(),
-          updatedAt: new Date()
-        },
-        {
-          email: "user@example.com",
-          name: "Regular User",
-          role: "user",
-          createdAt: new Date(),
-          updatedAt: new Date()
-        }
-      ]);
-      
+      await sql`
+        INSERT INTO users (email, name, role)
+        VALUES
+          ('admin@example.com', 'Admin User', 'admin'),
+          ('user@example.com', 'Regular User', 'user')
+        ON CONFLICT (email) DO NOTHING
+      `;
+
       logger.info("Seeded initial users");
     },
     clear: async () => {
-      const db = mongoose.connection.db;
-      await db.collection("users").deleteMany({
-        email: { $in: ["admin@example.com", "user@example.com"] }
-      });
+      const sql = getSql();
+      await sql`
+        DELETE FROM users
+        WHERE email IN ('admin@example.com', 'user@example.com')
+      `;
     }
   }
   // Add more seeds here

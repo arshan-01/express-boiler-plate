@@ -5,13 +5,13 @@
  * Run: node scripts/seed.js
  */
 
-import { connectMongo, disconnectMongo } from "../src/config/mongo.js";
+import { connectPostgres, disconnectPostgres } from "../src/config/postgres.js";
 import { runSeeds } from "../src/db/seeds/index.js";
 import { logger } from "../src/config/logger.js";
 
 async function main() {
   try {
-    await connectMongo();
+    await connectPostgres();
     await runSeeds();
     logger.info("Seeding completed successfully");
     process.exit(0);
@@ -19,7 +19,7 @@ async function main() {
     logger.error({ err }, "Seeding failed");
     process.exit(1);
   } finally {
-    await disconnectMongo();
+    await disconnectPostgres();
   }
 }
 

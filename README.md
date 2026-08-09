@@ -1,15 +1,15 @@
 # Express Boilerplate - Production-Ready Starter Template
 
-A comprehensive, production-ready Express.js boilerplate with MongoDB, Redis, BullMQ, comprehensive security, API versioning, caching, rate limiting, file handling, monitoring, and more.
+A comprehensive, production-ready Express.js boilerplate with Neon Postgres, Redis, BullMQ, comprehensive security, API versioning, caching, rate limiting, file handling, monitoring, and more.
 
 ## 🚀 Features
 
 ### Core Infrastructure
 - ✅ **Environment Validation** - Zod schema validation on startup
 - ✅ **Logging** - Winston structured logger with request ID injection and redaction
-- ✅ **Database Connections** - MongoDB with pooling, Redis singleton
+- ✅ **Database Connections** - Neon Postgres, Redis singleton
 - ✅ **Error Handling** - Global error handler with contextual logging
-- ✅ **Security Middleware** - Helmet, CORS, mongo-sanitize, HPP
+- ✅ **Security Middleware** - Helmet, CORS, HPP
 - ✅ **Request Utilities** - Request ID, async handler, request context
 - ✅ **Graceful Shutdown** - Proper cleanup on SIGTERM/SIGINT
 
@@ -28,7 +28,7 @@ A comprehensive, production-ready Express.js boilerplate with MongoDB, Redis, Bu
 
 - **Runtime**: Node.js (ESM)
 - **Framework**: Express.js
-- **Database**: MongoDB (Mongoose)
+- **Database**: Neon Postgres
 - **Cache/Queue**: Redis (ioredis)
 - **Job Queue**: BullMQ
 - **Validation**: Zod
@@ -50,7 +50,7 @@ cp env.example .env
 ```
 
 Edit `.env` with your configuration:
-- MongoDB connection string
+- Neon Postgres connection string
 - Redis connection details
 - JWT secret
 - SMTP settings (optional)
@@ -82,7 +82,7 @@ src/
 │   ├── env.js           # Validated config object
 │   ├── env.schema.js    # Zod environment schema
 │   ├── logger.js        # Winston logger with request ID and redaction
-│   ├── mongo.js         # MongoDB connection
+│   ├── postgres.js      # Neon Postgres connection
 │   └── redis.js         # Redis singleton
 ├── middlewares/         # Express middlewares
 │   ├── apiVersioning.js # API versioning
@@ -145,7 +145,6 @@ Default routes (without version) map to v1 for backward compatibility.
 
 - **Helmet** - Security headers
 - **CORS** - Configurable origins
-- **mongo-sanitize** - NoSQL injection prevention
 - **HPP** - HTTP Parameter Pollution prevention
 - **Rate Limiting** - Redis-backed, configurable per route
 - **Request ID** - Request tracking and correlation
@@ -241,8 +240,8 @@ const { items, total } = await userService.listUsers({
 
 return paginatedResponse(res, items, total, pagination);
 
-// If a route supports filtering or sorting, keep Mongoose-specific
-// filter/sort/query details inside the domain repository.
+// If a route supports filtering or sorting, keep SQL-specific
+// where/order/query details inside the domain repository.
 ```
 
 ## 📤 File Uploads
@@ -280,8 +279,8 @@ Add to `src/db/migrations/migrations.js`:
 {
   name: "002-add-user-indexes",
   up: async () => {
-    const db = mongoose.connection.db;
-    await db.collection("users").createIndex({ email: 1 });
+    const sql = getSql();
+    await sql`CREATE INDEX IF NOT EXISTS users_email_idx ON users (email)`;
   }
 }
 ```
@@ -349,7 +348,7 @@ metrics.recordHistogram("response_time", 250, { endpoint: "/users" });
 
 - `GET /v1/debug/info` - Server info (memory, uptime, etc.)
 - `GET /v1/debug/redis` - Redis connection info
-- `GET /v1/debug/mongo` - MongoDB connection info
+- `GET /v1/debug/postgres` - Postgres connection info
 
 ### Scripts
 
@@ -432,7 +431,7 @@ conflict(res, "Email already exists", { email });
 ### Environment Variables
 
 Ensure all required environment variables are set:
-- `MONGODB_URI` - MongoDB connection string
+- `DATABASE_URL` - Neon Postgres connection string
 - `JWT_SECRET` - JWT signing secret
 - `REDIS_HOST` / `REDIS_URL` - Redis connection
 - `NODE_ENV=production` - Production mode
@@ -441,7 +440,7 @@ Ensure all required environment variables are set:
 
 1. **Horizontal Scaling**: Run multiple server instances behind a load balancer
 2. **Worker Scaling**: Run multiple worker processes: `npm run worker`
-3. **Database**: Use MongoDB replica sets
+3. **Database**: Use Neon branching/read replicas where appropriate
 4. **Cache**: Use Redis cluster for high availability
 
 ### Health Checks
@@ -451,7 +450,7 @@ Monitor `/v1/health` endpoint for service health.
 ## 📚 Additional Resources
 
 - [Express.js Documentation](https://expressjs.com/)
-- [Mongoose Documentation](https://mongoosejs.com/)
+- [Neon Documentation](https://neon.tech/docs)
 - [BullMQ Documentation](https://docs.bullmq.io/)
 - [Zod Documentation](https://zod.dev/)
 

@@ -1,4 +1,3 @@
-import { mongoose } from "../../config/mongo.js";
 import { logger } from "../../config/logger.js";
 
 /**

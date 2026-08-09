@@ -1,6 +1,5 @@
 import { StatusCodes, getReasonPhrase } from "http-status-codes";
 import { ZodError } from "zod";
-import mongoose from "mongoose";
 import { config } from "../config/env.js";
 import { logger } from "../config/logger.js";
 
@@ -23,23 +22,18 @@ function errorHandler(err, req, res, next) {
     details = err.flatten();
   }
 
-  // Mongoose validation & cast
-  if (err instanceof mongoose.Error.ValidationError) {
-    statusCode = StatusCodes.BAD_REQUEST;
-    message = "Database validation error";
-    details = Object.values(err.errors).map((e) => e.message);
-  }
-  if (err instanceof mongoose.Error.CastError) {
+  // Postgres invalid text representation
+  if (err?.code === "22P02") {
     statusCode = StatusCodes.BAD_REQUEST;
     message = "Invalid id";
-    details = { path: err.path, value: err.value };
+    details = err.detail;
   }
 
-  // Duplicate key
-  if (err && err.code === 11000) {
+  // Unique constraint violation
+  if (err?.code === "23505") {
     statusCode = StatusCodes.CONFLICT;
     message = "Duplicate key";
-    details = err.keyValue;
+    details = err.detail;
   }
 
   // Error logging with context
@@ -70,4 +64,3 @@ function errorHandler(err, req, res, next) {
 }
 
 export { errorHandler };
-

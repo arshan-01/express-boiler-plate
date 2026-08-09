@@ -1,20 +1,29 @@
-import { mongoose } from "../../config/mongo.js";
+import { getSql } from "../../config/postgres.js";
 import { logger } from "../../config/logger.js";
 
 /**
  * Database Migration System
- * Simple migration system for MongoDB
+ * Simple migration system for Postgres
  */
 
-const migrationsCollection = "migrations";
+async function ensureMigrationsTable() {
+  const sql = getSql();
+  await sql`
+    CREATE TABLE IF NOT EXISTS migrations (
+      id bigserial PRIMARY KEY,
+      name text NOT NULL UNIQUE,
+      applied_at timestamptz NOT NULL DEFAULT now()
+    )
+  `;
+}
 
 /**
  * Get applied migrations
  */
 async function getAppliedMigrations() {
-  const db = mongoose.connection.db;
-  const collection = db.collection(migrationsCollection);
-  const migrations = await collection.find({}).toArray();
+  const sql = getSql();
+  await ensureMigrationsTable();
+  const migrations = await sql`SELECT name FROM migrations ORDER BY applied_at ASC`;
   return migrations.map((m) => m.name);
 }
 
@@ -22,12 +31,12 @@ async function getAppliedMigrations() {
  * Mark migration as applied
  */
 async function markMigrationApplied(name) {
-  const db = mongoose.connection.db;
-  const collection = db.collection(migrationsCollection);
-  await collection.insertOne({
-    name,
-    appliedAt: new Date()
-  });
+  const sql = getSql();
+  await sql`
+    INSERT INTO migrations (name)
+    VALUES (${name})
+    ON CONFLICT (name) DO NOTHING
+  `;
 }
 
 /**

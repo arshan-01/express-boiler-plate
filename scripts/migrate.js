@@ -5,13 +5,13 @@
  * Run: node scripts/migrate.js
  */
 
-import { connectMongo, disconnectMongo } from "../src/config/mongo.js";
+import { connectPostgres, disconnectPostgres } from "../src/config/postgres.js";
 import { runMigrations } from "../src/db/migrations/index.js";
 import { logger } from "../src/config/logger.js";
 
 async function main() {
   try {
-    await connectMongo();
+    await connectPostgres();
     await runMigrations();
     logger.info("Migrations completed successfully");
     process.exit(0);
@@ -19,7 +19,7 @@ async function main() {
     logger.error({ err }, "Migrations failed");
     process.exit(1);
   } finally {
-    await disconnectMongo();
+    await disconnectPostgres();
   }
 }
 

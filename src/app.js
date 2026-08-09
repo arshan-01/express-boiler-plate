@@ -50,7 +50,7 @@ function createApp() {
   app.use(requestId);
   app.use(requestLogger);
 
-  // Security middleware (mongo-sanitize, HPP)
+  // Security middleware (HPP)
   securityMiddleware(app);
 
   // Health check endpoint (no rate limiting)

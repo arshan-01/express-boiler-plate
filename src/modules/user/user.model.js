@@ -1,16 +1,18 @@
-import { mongoose } from "../../config/mongo.js";
+const USER_TABLE = "users";
+const USER_ROLES = ["user", "admin"];
 
-const userSchema = new mongoose.Schema(
-  {
-    email: { type: String, required: true, unique: true, lowercase: true },
-    name: { type: String, required: true },
-    role: { type: String, enum: ["user", "admin"], default: "user" }
-  },
-  { timestamps: true }
-);
+function mapUserRow(row) {
+  if (!row) return null;
 
-const User = mongoose.model("User", userSchema);
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    role: row.role,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
 
-export { User };
-
+export { USER_ROLES, USER_TABLE, mapUserRow };
 

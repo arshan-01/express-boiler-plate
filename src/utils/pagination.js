@@ -24,11 +24,11 @@ export function parsePagination(query, options = {}) {
  * @param {Object} query - Express query object
  * @param {string[]} allowedFields - Allowed fields for sorting
  * @param {Object} options - Default values
- * @returns {Object} Sort object for MongoDB
+ * @returns {Object} Sorting parameters
  */
 export function parseSorting(query, allowedFields = [], options = {}) {
   const sortBy = query.sortBy || options.sortBy || "createdAt";
-  const sortOrder = query.sortOrder === "asc" ? 1 : -1;
+  const sortOrder = query.sortOrder === "asc" ? "asc" : "desc";
 
   // Validate sort field
   if (allowedFields.length > 0 && !allowedFields.includes(sortBy)) {
@@ -37,34 +37,26 @@ export function parseSorting(query, allowedFields = [], options = {}) {
     );
   }
 
-  return { [sortBy]: sortOrder };
+  return { sortBy, sortOrder };
 }
 
 /**
  * Parse filtering parameters from query
  * @param {Object} query - Express query object
  * @param {Object} options - Filter options
- * @returns {Object} Filter object for MongoDB
+ * @returns {Object} Filtering parameters
  */
 export function parseFiltering(query, options = {}) {
   const filter = {};
 
   // Date range filtering
-  if (query.startDate || query.endDate) {
-    filter.createdAt = {};
-    if (query.startDate) {
-      filter.createdAt.$gte = new Date(query.startDate);
-    }
-    if (query.endDate) {
-      filter.createdAt.$lte = new Date(query.endDate);
-    }
-  }
+  if (query.startDate) filter.startDate = new Date(query.startDate);
+  if (query.endDate) filter.endDate = new Date(query.endDate);
 
   // Text search
   if (query.search) {
-    filter.$or = options.searchFields?.map((field) => ({
-      [field]: { $regex: query.search, $options: "i" }
-    })) || [];
+    filter.search = query.search;
+    filter.searchFields = options.searchFields || [];
   }
 
   // Custom filters from options

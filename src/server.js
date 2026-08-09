@@ -3,7 +3,7 @@ import http from "node:http";
 import { config } from "./config/env.js";
 import { logger } from "./config/logger.js";
 import { createApp } from "./app.js";
-import { connectMongo, disconnectMongo } from "./config/mongo.js";
+import { connectPostgres, disconnectPostgres } from "./config/postgres.js";
 import { redis } from "./config/redis.js";
 import { startWorkers, stopWorkers } from "./queues/workers.js";
 import { initSocket, closeSocket } from "./realtime/socket.js";
@@ -11,7 +11,7 @@ import { initSocket, closeSocket } from "./realtime/socket.js";
 let server;
 
 async function bootstrap() {
-  await connectMongo();
+  await connectPostgres();
   await redis.ping();
   startWorkers();
 
@@ -42,11 +42,11 @@ async function bootstrap() {
       logger.error({ err }, "Error closing Redis");
     }
     
-    // Close MongoDB connection
+    // Close Postgres connection
     try {
-      await disconnectMongo();
+      await disconnectPostgres();
     } catch (err) {
-      logger.error({ err }, "Error closing MongoDB");
+      logger.error({ err }, "Error closing Postgres");
     }
     
     logger.info("Shutdown complete");
@@ -71,5 +71,4 @@ bootstrap().catch((err) => {
   logger.fatal({ err }, "Failed to start server");
   process.exit(1);
 });
-
 

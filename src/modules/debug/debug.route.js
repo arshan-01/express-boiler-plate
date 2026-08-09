@@ -2,7 +2,7 @@ import { Router } from "express";
 import { ok } from "../../utils/apiResponse.js";
 import { config } from "../../config/env.js";
 import { redis } from "../../config/redis.js";
-import { mongoose } from "../../config/mongo.js";
+import { getSql } from "../../config/postgres.js";
 
 const debugRouter = Router();
 
@@ -34,21 +34,24 @@ if (config.nodeEnv === "development") {
     }
   });
 
-  debugRouter.get("/mongo", async (req, res) => {
+  debugRouter.get("/postgres", async (req, res) => {
     try {
-      const db = mongoose.connection.db;
-      const collections = await db.listCollections().toArray();
+      const sql = getSql();
+      const [version] = await sql`SELECT version()`;
+      const tables = await sql`
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+        ORDER BY table_name
+      `;
       ok(res, {
-        readyState: mongoose.connection.readyState,
-        host: mongoose.connection.host,
-        port: mongoose.connection.port,
-        name: mongoose.connection.name,
-        collections: collections.map((c) => c.name)
-      }, "MongoDB info");
+        version: version.version,
+        tables: tables.map((table) => table.table_name)
+      }, "Postgres info");
     } catch (err) {
       res.status(500).json({
         success: false,
-        message: "Failed to get MongoDB info",
+        message: "Failed to get Postgres info",
         error: err.message
       });
     }
